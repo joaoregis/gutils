@@ -158,3 +158,15 @@ func FormatDateTimeByLanguage(value, language string) (string, string) {
 	completeHour := fmt.Sprintf("%s:%s", hour, minutes)
 	return date, completeHour
 }
+
+// UserNeverSigned return true if usu_assinante_datainicio contains a date
+func UserNeverSigned(subscribeDate interface{}) bool {
+	if subscribeDate == nil {
+		return true
+	}
+	_, err := time.Parse("2006-01-02", subscribeDate.(string))
+	if err != nil {
+		return  true
+	}
+	return false
+}
