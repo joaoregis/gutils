@@ -111,3 +111,62 @@ func InArray(value interface{}, array interface{}) (bool, int) {
 	}
 	return exists, index
 }
+
+// EncodeToLatin1 encode utf8 to ISO8859_9 (latin)
+func EncodeToLatin1(utf8_text string) string {
+	b := []byte(utf8_text)
+	encoded2, _ := charmap.ISO8859_9.NewDecoder().Bytes(b)
+	return string(encoded2[:])
+}
+​
+// EncodeToUtf8 encode ISO8859_9 (latin) to utf8
+func EncodeToUtf8(latin1_text string) string {
+	r := []byte(latin1_text)
+	encoded, _ := charmap.ISO8859_9.NewEncoder().Bytes(r)
+	return string(encoded[:])
+}
+​
+// ReplaceGender replace text infos to custom
+func ReplaceGender(gender, username, text string) string {
+	newText := strings.ReplaceAll(text, "{user}", username)
+​
+	if gender == "M" {
+		return strings.ReplaceAll(newText, "{x}", "o")
+	}
+​
+	return strings.ReplaceAll(newText, "{x}", "a")
+}
+​
+// FormatDateTimeByLanguage formats dates based on provided language
+func FormatDateTimeByLanguage(value, language string) (string, string) {
+	var date string
+	dateTime := strings.Split(value, " ")
+	splitDate := strings.Split(dateTime[0], "-")
+	year := splitDate[0]
+	month := splitDate[1]
+	day := splitDate[2]
+	date = fmt.Sprintf("%s/%s/%s", day, month, year)
+​
+	if language == "en_us" {
+		date = fmt.Sprintf("%s/%s/%s", month, day, year)
+	}
+​
+	hours := strings.Split(dateTime[1], ":")
+	hour := hours[0]
+	minutes := hours[1]
+​
+	completeHour := fmt.Sprintf("%s:%s", hour, minutes)
+	return date, completeHour
+}
+
+// UserNeverSigned return true if usu_assinante_datainicio contains a date
+func UserNeverSigned(subscribeDate interface{}) bool {
+	if subscribeDate == nil {
+		return true
+	}
+	_, err := time.Parse("2006-01-02", subscribeDate.(string))
+	if err != nil {
+		return  true
+	}
+	return false
+}
