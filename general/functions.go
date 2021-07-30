@@ -3,14 +3,20 @@ package general
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"log"
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
-//ReadConfig Reads Settings file.
+// ReadConfigJson Reads Settings file.
 func ReadConfigJson(configStruct interface{}, filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -113,30 +119,30 @@ func InArray(value interface{}, array interface{}) (bool, int) {
 }
 
 // EncodeToLatin1 encode utf8 to ISO8859_9 (latin)
-func EncodeToLatin1(utf8_text string) string {
-	b := []byte(utf8_text)
+func EncodeToLatin1(utf8Text string) string {
+	b := []byte(utf8Text)
 	encoded2, _ := charmap.ISO8859_9.NewDecoder().Bytes(b)
 	return string(encoded2[:])
 }
-​
+
 // EncodeToUtf8 encode ISO8859_9 (latin) to utf8
-func EncodeToUtf8(latin1_text string) string {
-	r := []byte(latin1_text)
+func EncodeToUtf8(latin1Text string) string {
+	r := []byte(latin1Text)
 	encoded, _ := charmap.ISO8859_9.NewEncoder().Bytes(r)
 	return string(encoded[:])
 }
-​
+
 // ReplaceGender replace text infos to custom
 func ReplaceGender(gender, username, text string) string {
 	newText := strings.ReplaceAll(text, "{user}", username)
-​
+
 	if gender == "M" {
 		return strings.ReplaceAll(newText, "{x}", "o")
 	}
-​
+
 	return strings.ReplaceAll(newText, "{x}", "a")
 }
-​
+
 // FormatDateTimeByLanguage formats dates based on provided language
 func FormatDateTimeByLanguage(value, language string) (string, string) {
 	var date string
@@ -146,15 +152,15 @@ func FormatDateTimeByLanguage(value, language string) (string, string) {
 	month := splitDate[1]
 	day := splitDate[2]
 	date = fmt.Sprintf("%s/%s/%s", day, month, year)
-​
+
 	if language == "en_us" {
 		date = fmt.Sprintf("%s/%s/%s", month, day, year)
 	}
-​
+
 	hours := strings.Split(dateTime[1], ":")
 	hour := hours[0]
 	minutes := hours[1]
-​
+
 	completeHour := fmt.Sprintf("%s:%s", hour, minutes)
 	return date, completeHour
 }
@@ -169,4 +175,15 @@ func UserNeverSigned(subscribeDate interface{}) bool {
 		return  true
 	}
 	return false
+}
+
+// RemoveAccentuation removes any accentuation from a string
+func RemoveAccentuation(s string) string {
+	if s == "" {
+		return s
+	}
+
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	s, _, _ = transform.String(t, s)
+	return s
 }
